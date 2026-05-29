@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Sign up - BST Internship{% endblock %}
+{% block content %}
+<section class="auth-page">
+    <div class="auth-card wide">
+        <h1>Create Student Account</h1>
+        <p class="muted">Choose your mini character and start the 14-day journey.</p>
+
+        <form method="post">
+            <label>Name</label>
+            <input name="name" required>
+
+            <label>Email</label>
+            <input name="email" type="email" required>
+
+            <label>Password</label>
+            <input name="password" type="password" required>
+
+            <label>Mini Character</label>
+            <div class="avatar-picker">
+                {% for avatar in avatars %}
+                    <label>
+                        <input type="radio" name="avatar" value="{{ avatar }}" {% if loop.first %}checked{% endif %}>
+                        <span>{{ avatar }}</span>
+                    </label>
+                {% endfor %}
+            </div>
+
+            <button class="main-cta full" type="submit">Create Account</button>
+        </form>
+    </div>
+</section>
+{% endblock %}

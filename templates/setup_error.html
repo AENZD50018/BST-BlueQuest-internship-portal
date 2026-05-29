@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Setup Required{% endblock %}
+{% block content %}
+<section class="auth-page">
+    <div class="auth-card wide">
+        <h1>Google Sheets Setup Required</h1>
+        <p class="muted">The portal is ready, but Google Sheets connection is not configured yet.</p>
+
+        <div class="hint-box error">
+            {{ error }}
+        </div>
+
+        {% if service_email %}
+        <div class="hint-box">
+            Service account email detected:<br>
+            <strong>{{ service_email }}</strong><br><br>
+            Share your Google Sheet with this email as <strong>Editor</strong>.
+        </div>
+        {% endif %}
+
+        <h3>Required environment variables</h3>
+        <pre>GOOGLE_SHEET_ID
+GOOGLE_SERVICE_ACCOUNT_JSON
+SECRET_KEY</pre>
+
+        <p class="muted">After setting these, redeploy or restart the app and open <code>/setup</code>.</p>
+    </div>
+</section>
+{% endblock %}

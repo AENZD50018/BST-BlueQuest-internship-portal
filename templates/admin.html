@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}Admin - BST Internship{% endblock %}
+{% block content %}
+<section class="course-header compact">
+    <div>
+        <span class="pill">TRAINER PANEL</span>
+        <h1>Admin Dashboard</h1>
+        <p>Update day-wise notes, file links, download buttons and monitor student stages.</p>
+    </div>
+
+    <div class="hero-badge">
+        <div class="avatar big">🛡️</div>
+        <h3>BST Trainer</h3>
+        <p>Admin Control</p>
+    </div>
+</section>
+
+<section class="course-shell">
+    <div class="course-card">
+        <div class="chapter-line">
+            <span class="chapter-no">A</span>
+            <div>
+                <h2>Manage Days</h2>
+                <p class="muted">Open any day to edit notes, buttons and Google Drive files.</p>
+            </div>
+        </div>
+
+        <div class="admin-day-list">
+            {% for day in days %}
+                <a href="/admin/day/{{ day['day'] }}">
+                    <span>Day {{ "%02d"|format(day['day']) }}</span>
+                    <strong>{{ day['title'] }}</strong>
+                    <small>Edit</small>
+                </a>
+            {% endfor %}
+        </div>
+    </div>
+
+    <aside class="side-stack">
+        <div class="side-card">
+            <h3>Storage Setup</h3>
+            <div class="sheet-info-box">
+                <p><b>Users:</b> {{ sheet_config.SHEET_USERS }}</p>
+                <p><b>Progress:</b> {{ sheet_config.SHEET_PROGRESS }}</p>
+                <p><b>Student Notes:</b> {{ sheet_config.SHEET_STUDENT_NOTES }}</p>
+                <p><b>Day Notes:</b> {{ sheet_config.SHEET_DAY_NOTES }}</p>
+                <p><b>Day Files:</b> {{ sheet_config.SHEET_DAY_FILES }}</p>
+                <p><b>Day Buttons:</b> {{ sheet_config.SHEET_DAY_BUTTONS }}</p>
+                <p><b>Drive Folder:</b> {{ sheet_config.GOOGLE_DRIVE_FOLDER_ID or 'Not set' }}</p>
+            </div>
+        </div>
+
+        <div class="side-card">
+            <h3>Student Progress</h3>
+            <div class="friend-list">
+                {% for student in students %}
+                    <div class="friend-row">
+                        <div class="friend-avatar">{{ student.avatar }}</div>
+                        <div class="friend-info">
+                            <strong>{{ student.name }}</strong>
+                            <span>{{ student.email }}</span>
+                            <span>{{ student.stage }} • {{ student.completed }}/{{ student.total }} • {{ student.percent }}%</span>
+                            <div class="progress-bar tiny"><span style="width: {{ student.percent }}%"></span></div>
+                        </div>
+                    </div>
+                {% else %}
+                    <p class="muted">No students registered.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </aside>
+</section>
+{% endblock %}

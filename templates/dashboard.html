@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% block title %}Dashboard - BST Internship{% endblock %}
+{% block content %}
+<section class="course-header">
+    <div>
+        <span class="pill">14 DAY INTERNSHIP</span>
+        <h1>Full Stack Web Development<br>with Python and AI Basics</h1>
+        <p>Track your daily missions, notes, files and final submission.</p>
+    </div>
+
+    <div class="hero-badge">
+        <div class="avatar big">{{ user.avatar }}</div>
+        <h3>{{ user.name }}</h3>
+        <p>Level {{ level }}</p>
+    </div>
+</section>
+
+<section class="course-shell">
+    <div class="course-card">
+        <div class="chapter-line">
+            <span class="chapter-no">01</span>
+            <div>
+                <h2>The 14-Day Learning Path</h2>
+                <p class="muted">Click each day, download notes/files, do the task and mark it complete.</p>
+            </div>
+        </div>
+
+        <div class="day-map">
+            {% for day in days %}
+                {% set done = progress.get(day['day'], False) %}
+                {% set current = (not done and day['day'] == completed_days + 1) %}
+                <a href="/day/{{ day['day'] }}" class="day-row {% if done %}done{% elif current %}current{% endif %}">
+                    <div class="day-badge">{{ "%02d"|format(day['day']) }}</div>
+                    <div class="day-main">
+                        <h3>{{ day['title'] }}</h3>
+                        <p>{{ day['items'][0] if day['items'] else day['task'] }}</p>
+                        <div class="chips">
+                            {% for item in day['items'][:3] %}
+                                <span>{{ item }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="day-action">
+                        {% if done %}
+                            <span class="status done-status">DONE</span>
+                        {% elif current %}
+                            <span class="status current-status">START</span>
+                        {% else %}
+                            <span class="status locked-status">OPEN</span>
+                        {% endif %}
+                    </div>
+                </a>
+            {% endfor %}
+        </div>
+    </div>
+
+    <aside class="side-stack">
+        <div class="profile-box">
+            <div class="avatar">{{ user.avatar }}</div>
+            <h3>{{ user.name }}</h3>
+            <p>Level {{ level }}</p>
+            <div class="progress-bar"><span style="width: {{ percent }}%"></span></div>
+            <p>{{ completed_days }} / {{ total_days }} days completed</p>
+        </div>
+
+        <div class="side-card">
+            <h3>Course Progress</h3>
+            <p>Exercises <b>{{ completed_days }} / {{ total_days }}</b></p>
+            <p>XP Earned <b>{{ xp }}</b></p>
+            <div class="progress-bar"><span style="width: {{ percent }}%"></span></div>
+        </div>
+
+        <div class="side-card">
+            <h3>Course Badges</h3>
+            <div class="badge-list">
+                {% if completed_days >= 1 %}<span>HTML Starter</span>{% endif %}
+                {% if completed_days >= 5 %}<span>Backend Beginner</span>{% endif %}
+                {% if completed_days >= 10 %}<span>AI Explorer</span>{% endif %}
+                {% if completed_days >= 14 %}<span>Final Finisher</span>{% endif %}
+                {% if completed_days == 0 %}<p class="muted">Complete Day 1 to earn your first badge.</p>{% endif %}
+            </div>
+        </div>
+
+        <div class="side-card">
+            <h3>Friends Progress</h3>
+            <p class="muted">See which stage your classmates have reached.</p>
+            <div class="friend-list">
+                {% for mate in classmates %}
+                    {% if mate.id != user.id %}
+                    <div class="friend-row">
+                        <div class="friend-avatar">{{ mate.avatar }}</div>
+                        <div class="friend-info">
+                            <strong>{{ mate.name }}</strong>
+                            <span>{{ mate.stage }} • {{ mate.completed }} / {{ mate.total }}</span>
+                            <div class="progress-bar tiny"><span style="width: {{ mate.percent }}%"></span></div>
+                        </div>
+                    </div>
+                    {% endif %}
+                {% else %}
+                    <p class="muted">No other students yet.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </aside>
+</section>
+{% endblock %}

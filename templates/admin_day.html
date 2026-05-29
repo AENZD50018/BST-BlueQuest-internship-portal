@@ -1,0 +1,199 @@
+{% extends "base.html" %}
+{% block title %}Admin Day {{ day['day'] }}{% endblock %}
+{% block content %}
+<section class="course-header compact">
+    <div>
+        <span class="pill">DAY {{ "%02d"|format(day['day']) }} CONTROL</span>
+        <h1>Manage Day {{ day['day'] }}</h1>
+        <p>{{ day['title'] }}</p>
+    </div>
+
+    <div class="hero-actions">
+        <a class="outline-btn" href="/day/{{ day['day'] }}">Preview Student Page</a>
+        <a class="outline-btn" href="/admin">Back to Admin</a>
+    </div>
+</section>
+
+<section class="lesson-shell admin-edit-shell">
+    <div class="course-card lesson-card">
+        <div class="chapter-line">
+            <span class="chapter-no">N</span>
+            <div>
+                <h2>Update Day Notes</h2>
+                <p class="muted">These notes are shown to students and can be downloaded.</p>
+            </div>
+        </div>
+
+        <form method="post" class="upload-form">
+            <input type="hidden" name="action" value="update_notes">
+
+            <label>Title shown to students</label>
+            <input name="title" value="{{ note.title }}" required>
+
+            <label>Short description shown below title</label>
+            <input name="description" value="{{ note.description }}" required>
+
+            <label>Full notes / Markdown content</label>
+            <textarea class="large-textarea" name="content" rows="16">{{ note.content }}</textarea>
+
+            <button class="main-cta full" type="submit">Save Notes</button>
+        </form>
+
+        <div class="chapter-line small-chapter">
+            <span class="chapter-no">B</span>
+            <div>
+                <h2>Edit Download Buttons</h2>
+                <p class="muted">These are the buttons students see under “Files and Notes”. You can change text, link, order, style and visibility.</p>
+            </div>
+        </div>
+
+        <div class="download-list">
+            {% for button in quick_buttons %}
+            <div class="download-row button-admin-row">
+                <form method="post" class="button-edit-form">
+                    <input type="hidden" name="action" value="update_button">
+                    <input type="hidden" name="button_id" value="{{ button.id }}">
+
+                    <label>Button Text</label>
+                    <input name="button_text" value="{{ button.button_text }}" required>
+
+                    <label>Button URL</label>
+                    <input name="button_url" value="{{ button.url }}" placeholder="/download/day/{{ day['day'] }}/notes or Google Drive link">
+
+                    <div class="form-grid-3">
+                        <div>
+                            <label>Style</label>
+                            <select name="button_style">
+                                <option value="btn" {% if button.style == 'btn' %}selected{% endif %}>Blue Main Button</option>
+                                <option value="ghost" {% if button.style == 'ghost' %}selected{% endif %}>Dark Outline Button</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label>Order</label>
+                            <input name="sort_order" value="{{ button.sort_order }}" placeholder="10">
+                        </div>
+                        <div>
+                            <label>Visible</label>
+                            <label class="checkline"><input type="checkbox" name="is_visible" {% if button.visible_bool %}checked{% endif %}> Show</label>
+                        </div>
+                    </div>
+
+                    <div class="row-actions">
+                        <button class="main-cta" type="submit">Update Button</button>
+                    </div>
+                </form>
+
+                <form method="post" class="inline-delete">
+                    <input type="hidden" name="action" value="delete_button">
+                    <input type="hidden" name="button_id" value="{{ button.id }}">
+                    <button class="danger-btn" type="submit" onclick="return confirm('Delete this button?')">Delete Button</button>
+                </form>
+            </div>
+            {% endfor %}
+        </div>
+
+        <form method="post" class="upload-form">
+            <input type="hidden" name="action" value="add_button">
+            <h3>Add New Button</h3>
+
+            <label>Button Text</label>
+            <input name="button_text" placeholder="Open Day 2 Figma File">
+
+            <label>Button URL</label>
+            <input name="button_url" placeholder="Google Drive link or internal route">
+
+            <div class="form-grid-3">
+                <div>
+                    <label>Style</label>
+                    <select name="button_style">
+                        <option value="ghost">Dark Outline Button</option>
+                        <option value="btn">Blue Main Button</option>
+                    </select>
+                </div>
+                <div>
+                    <label>Order</label>
+                    <input name="sort_order" value="99">
+                </div>
+                <div>
+                    <label>Visible</label>
+                    <label class="checkline"><input type="checkbox" name="is_visible" checked> Show</label>
+                </div>
+            </div>
+
+            <button class="main-cta full" type="submit">Add Button</button>
+        </form>
+    </div>
+
+    <aside class="side-stack">
+        <div class="side-card">
+            <h3>Add Google Drive / Docs File Link</h3>
+            <form method="post">
+                <input type="hidden" name="action" value="add_file">
+
+                <label>File Button Text</label>
+                <input name="file_title" placeholder="Day 1 Handbook PDF">
+
+                <label>Google Drive / Docs / ZIP Public URL</label>
+                <input name="file_url" placeholder="https://drive.google.com/...">
+
+                <button class="main-cta full" type="submit">Add File Link</button>
+            </form>
+        </div>
+
+        <div class="side-card">
+            <h3>Optional: Upload File to Google Drive</h3>
+            <p class="muted">Works only if GOOGLE_DRIVE_FOLDER_ID is added and the service account has Editor access to that Drive folder.</p>
+            <form method="post" enctype="multipart/form-data">
+                <input type="hidden" name="action" value="upload_drive_file">
+
+                <label>Display Title</label>
+                <input name="drive_file_title" placeholder="Day {{ day['day'] }} Notes PDF">
+
+                <label>Select File</label>
+                <input type="file" name="drive_file">
+
+                <button class="main-cta full" type="submit">Upload to Google Drive</button>
+            </form>
+        </div>
+
+        <div class="side-card">
+            <h3>Current Extra Files</h3>
+            <div class="download-list">
+                {% for file in files %}
+                    <div class="download-row file-admin-row">
+                        <form method="post" class="file-edit-form">
+                            <input type="hidden" name="action" value="update_file">
+                            <input type="hidden" name="file_id" value="{{ file.id }}">
+
+                            <label>Text</label>
+                            <input name="file_title" value="{{ file.title }}">
+
+                            <label>URL</label>
+                            <input name="file_url" value="{{ file.url }}">
+
+                            <button class="main-cta full" type="submit">Update File</button>
+                        </form>
+
+                        <form method="post" action="/admin/file/{{ file.id }}/delete" class="inline-delete">
+                            <input type="hidden" name="day_no" value="{{ day['day'] }}">
+                            <button class="danger-btn" type="submit">Delete File</button>
+                        </form>
+                    </div>
+                {% else %}
+                    <p class="muted">No files yet.</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="side-card">
+            <h3>Current Storage Setup</h3>
+            <div class="sheet-info-box">
+                <p><b>Day Buttons Sheet:</b> {{ sheet_config.SHEET_DAY_BUTTONS }}</p>
+                <p><b>Day Files Sheet:</b> {{ sheet_config.SHEET_DAY_FILES }}</p>
+                <p><b>Day Notes Sheet:</b> {{ sheet_config.SHEET_DAY_NOTES }}</p>
+                <p><b>Drive Folder ID:</b> {{ sheet_config.GOOGLE_DRIVE_FOLDER_ID or 'Not set' }}</p>
+            </div>
+        </div>
+    </aside>
+</section>
+{% endblock %}

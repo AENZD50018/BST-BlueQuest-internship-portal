@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}BST Internship Portal{% endblock %}
+{% block content %}
+<section class="hero-banner">
+    <div class="hero-art">
+        <div class="temple-shape"></div>
+        <div class="floating-tile tile-a"></div>
+        <div class="floating-tile tile-b"></div>
+    </div>
+
+    <div class="hero-content">
+        <span class="pill">BEGINNER COURSE</span>
+        <h1>Full Stack Web Development<br>with Python and AI Basics</h1>
+        <p>Track 14 days of practical learning, notes, downloadable files, XP, badges and daily progress.</p>
+        <div class="hero-actions">
+            <a class="main-cta" href="/register">Start Learning</a>
+            <a class="outline-btn" href="/login">Login</a>
+        </div>
+    </div>
+</section>
+
+<section class="course-shell landing-shell">
+    <div class="course-card">
+        <div class="chapter-line">
+            <span class="chapter-no">01</span>
+            <div>
+                <h2>The 14-Day Internship Quest</h2>
+                <p class="muted">Login to download notes, complete tasks and track your progress.</p>
+            </div>
+        </div>
+
+        <div class="preview-list">
+            {% set titles = ["HTML + Internet","CSS + Pages","JavaScript + CMD","Git + GitHub","Flask Basics","SQLite + CRUD","AI / ML / GenAI","AI Prompting","AI Tools","Ollama","YOLO Colab","Resume","WordPress + Marketing","Final Submission"] %}
+            {% for title in titles %}
+                <div class="preview-row">
+                    <span>Day {{ "%02d"|format(loop.index) }}</span>
+                    <strong>{{ title }}</strong>
+                    <span class="status locked-status">LOGIN</span>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <aside class="side-stack">
+        <div class="side-card">
+            <h3>What students get</h3>
+            <p class="muted">Notes, files, daily tasks, progress tracking, XP, badges and final submission support.</p>
+        </div>
+        <div class="side-card">
+            <h3>Trainer controlled</h3>
+            <p class="muted">Admin can edit notes, buttons, Google Drive links and upload files for each day.</p>
+        </div>
+    </aside>
+</section>
+{% endblock %}
