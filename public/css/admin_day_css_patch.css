@@ -1,0 +1,113 @@
+/* Admin Day layout fix - paste at the bottom of public/css/style.css */
+.admin-edit-shell {
+    align-items: start;
+}
+
+.admin-main-card,
+.admin-side-stack,
+.admin-form-card,
+.admin-button-card,
+.admin-file-card,
+.admin-submission-card,
+.button-edit-form,
+.file-edit-form {
+    min-width: 0;
+    width: 100%;
+}
+
+.admin-list-stack {
+    display: grid;
+    gap: 14px;
+    margin-bottom: 20px;
+}
+
+.admin-button-card,
+.admin-file-card,
+.admin-submission-card,
+.admin-form-card {
+    background: #081128;
+    border: 1px solid var(--line);
+    padding: 18px;
+}
+
+.admin-button-card,
+.admin-file-card {
+    display: grid;
+    gap: 12px;
+}
+
+.admin-submission-card {
+    display: grid;
+    grid-template-columns: 48px 1fr;
+    gap: 14px;
+    align-items: start;
+}
+
+.submission-content {
+    min-width: 0;
+}
+
+.submission-text {
+    white-space: pre-wrap;
+    background: rgba(255,255,255,.03);
+    border: 1px solid var(--line);
+    padding: 12px;
+    margin: 10px 0;
+    color: #dbeafe;
+}
+
+.delete-form {
+    margin: 0;
+}
+
+.delete-form .danger-btn,
+.admin-button-card .danger-btn,
+.admin-file-card .danger-btn {
+    width: 100%;
+}
+
+.form-grid-3 {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 120px 110px;
+    gap: 12px;
+    align-items: end;
+}
+
+.checkline {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.checkline input {
+    width: auto;
+    margin: 0;
+}
+
+.top-check {
+    align-items: flex-start;
+    line-height: 1.4;
+}
+
+.soft-line {
+    border: 0;
+    border-top: 1px solid var(--line);
+    margin: 30px 0;
+}
+
+.sheet-info-box p {
+    word-break: break-word;
+}
+
+@media (max-width: 980px) {
+    .admin-edit-shell {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 700px) {
+    .form-grid-3,
+    .admin-submission-card {
+        grid-template-columns: 1fr;
+    }
+}
