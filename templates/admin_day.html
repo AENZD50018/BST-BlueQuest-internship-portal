@@ -15,7 +15,7 @@
 </section>
 
 <section class="lesson-shell admin-edit-shell">
-    <div class="course-card lesson-card">
+    <div class="course-card lesson-card admin-main-card">
 
         <div class="chapter-line">
             <span class="chapter-no">N</span>
@@ -25,7 +25,7 @@
             </div>
         </div>
 
-        <form method="post" class="upload-form">
+        <form method="post" class="upload-form admin-form-card">
             <input type="hidden" name="action" value="update_notes">
 
             <label>Title shown to students</label>
@@ -46,16 +46,16 @@
             <span class="chapter-no">S</span>
             <div>
                 <h2>Daily Submission Setting</h2>
-                <p class="muted">Control whether students must submit their daily work before marking this day complete.</p>
+                <p class="muted">Control whether students must submit work before marking this day complete.</p>
             </div>
         </div>
 
-        <form method="post" class="upload-form">
+        <form method="post" class="upload-form admin-form-card">
             <input type="hidden" name="action" value="update_day_setting">
 
-            <label class="checkline">
+            <label class="checkline top-check">
                 <input type="checkbox" name="submission_required" {% if day_setting.submission_required %}checked{% endif %}>
-                Require student work submission before marking complete
+                <span>Require student work submission before marking complete</span>
             </label>
 
             <label>Submission Title</label>
@@ -73,29 +73,25 @@
             <span class="chapter-no">W</span>
             <div>
                 <h2>Student Submissions</h2>
-                <p class="muted">Review student work links and daily submission text for this day.</p>
+                <p class="muted">Review student work links and submission text for this day.</p>
             </div>
         </div>
 
-        <div class="download-list">
+        <div class="admin-list-stack">
             {% for sub in submissions %}
-                <div class="download-row friend-row admin">
-                    <span>{{ sub.avatar }}</span>
-                    <div>
+                <div class="admin-submission-card">
+                    <div class="friend-avatar">{{ sub.avatar }}</div>
+                    <div class="submission-content">
                         <strong>{{ sub.student_name }}</strong>
-                        <p>{{ sub.student_email }}</p>
-                        <p>Status: {{ sub.status }} • Submitted: {{ sub.submitted_at }}</p>
+                        <p class="muted">{{ sub.student_email }}</p>
+                        <p class="muted">Status: {{ sub.status }} • Submitted: {{ sub.submitted_at }}</p>
 
                         {% if sub.submission_text %}
-                            <p>{{ sub.submission_text }}</p>
+                            <div class="submission-text">{{ sub.submission_text }}</div>
                         {% endif %}
 
                         {% if sub.submission_url %}
-                            <p>
-                                <a class="outline-btn" href="{{ sub.submission_url }}" target="_blank">
-                                    Open Work Link
-                                </a>
-                            </p>
+                            <a class="outline-btn" href="{{ sub.submission_url }}" target="_blank">Open Work Link</a>
                         {% endif %}
                     </div>
                 </div>
@@ -110,59 +106,59 @@
             <span class="chapter-no">B</span>
             <div>
                 <h2>Edit Download Buttons</h2>
-                <p class="muted">These are the buttons students see under “Files and Notes”. You can change text, link, order, style and visibility.</p>
+                <p class="muted">These buttons appear under “Files and Notes” on the student day page.</p>
             </div>
         </div>
 
-        <div class="download-list">
+        <div class="admin-list-stack">
             {% for button in quick_buttons %}
-            <div class="download-row button-admin-row">
-                <form method="post" class="button-edit-form">
-                    <input type="hidden" name="action" value="update_button">
-                    <input type="hidden" name="button_id" value="{{ button.id }}">
+                <div class="admin-button-card">
+                    <form method="post" class="button-edit-form">
+                        <input type="hidden" name="action" value="update_button">
+                        <input type="hidden" name="button_id" value="{{ button.id }}">
 
-                    <label>Button Text</label>
-                    <input name="button_text" value="{{ button.button_text }}" required>
+                        <label>Button Text</label>
+                        <input name="button_text" value="{{ button.button_text }}" required>
 
-                    <label>Button URL</label>
-                    <input name="button_url" value="{{ button.url }}" placeholder="/download/day/{{ day['day'] }}/notes or Google Drive link">
+                        <label>Button URL</label>
+                        <input name="button_url" value="{{ button.url }}" placeholder="/download/day/{{ day['day'] }}/notes or Google Drive link">
 
-                    <div class="form-grid-3">
-                        <div>
-                            <label>Style</label>
-                            <select name="button_style">
-                                <option value="btn" {% if button.style == 'btn' %}selected{% endif %}>Blue Main Button</option>
-                                <option value="ghost" {% if button.style == 'ghost' %}selected{% endif %}>Dark Outline Button</option>
-                            </select>
+                        <div class="form-grid-3">
+                            <div>
+                                <label>Style</label>
+                                <select name="button_style">
+                                    <option value="btn" {% if button.style == 'btn' %}selected{% endif %}>Blue Main Button</option>
+                                    <option value="ghost" {% if button.style == 'ghost' %}selected{% endif %}>Dark Outline Button</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label>Order</label>
+                                <input name="sort_order" value="{{ button.sort_order }}" placeholder="10">
+                            </div>
+                            <div>
+                                <label>Visible</label>
+                                <label class="checkline">
+                                    <input type="checkbox" name="is_visible" {% if button.visible_bool %}checked{% endif %}>
+                                    <span>Show</span>
+                                </label>
+                            </div>
                         </div>
-                        <div>
-                            <label>Order</label>
-                            <input name="sort_order" value="{{ button.sort_order }}" placeholder="10">
-                        </div>
-                        <div>
-                            <label>Visible</label>
-                            <label class="checkline">
-                                <input type="checkbox" name="is_visible" {% if button.visible_bool %}checked{% endif %}>
-                                Show
-                            </label>
-                        </div>
-                    </div>
 
-                    <div class="row-actions">
-                        <button class="main-cta" type="submit">Update Button</button>
-                    </div>
-                </form>
+                        <button class="main-cta full" type="submit">Update Button</button>
+                    </form>
 
-                <form method="post" class="inline-delete">
-                    <input type="hidden" name="action" value="delete_button">
-                    <input type="hidden" name="button_id" value="{{ button.id }}">
-                    <button class="danger-btn" type="submit" onclick="return confirm('Delete this button?')">Delete Button</button>
-                </form>
-            </div>
+                    <form method="post" class="delete-form">
+                        <input type="hidden" name="action" value="delete_button">
+                        <input type="hidden" name="button_id" value="{{ button.id }}">
+                        <button class="danger-btn" type="submit" onclick="return confirm('Delete this button?')">Delete Button</button>
+                    </form>
+                </div>
+            {% else %}
+                <p class="muted">No download buttons added yet.</p>
             {% endfor %}
         </div>
 
-        <form method="post" class="upload-form">
+        <form method="post" class="upload-form admin-form-card">
             <input type="hidden" name="action" value="add_button">
             <h3>Add New Button</h3>
 
@@ -188,7 +184,7 @@
                     <label>Visible</label>
                     <label class="checkline">
                         <input type="checkbox" name="is_visible" checked>
-                        Show
+                        <span>Show</span>
                     </label>
                 </div>
             </div>
@@ -197,7 +193,7 @@
         </form>
     </div>
 
-    <aside class="side-stack">
+    <aside class="side-stack admin-side-stack">
         <div class="side-card">
             <h3>Add Google Drive / Docs File Link</h3>
             <form method="post">
@@ -231,9 +227,9 @@
 
         <div class="side-card">
             <h3>Current Extra Files</h3>
-            <div class="download-list">
+            <div class="admin-list-stack">
                 {% for file in files %}
-                    <div class="download-row file-admin-row">
+                    <div class="admin-file-card">
                         <form method="post" class="file-edit-form">
                             <input type="hidden" name="action" value="update_file">
                             <input type="hidden" name="file_id" value="{{ file.id }}">
@@ -247,7 +243,7 @@
                             <button class="main-cta full" type="submit">Update File</button>
                         </form>
 
-                        <form method="post" action="/admin/file/{{ file.id }}/delete" class="inline-delete">
+                        <form method="post" action="/admin/file/{{ file.id }}/delete" class="delete-form">
                             <input type="hidden" name="day_no" value="{{ day['day'] }}">
                             <button class="danger-btn" type="submit">Delete File</button>
                         </form>
