@@ -16,6 +16,7 @@
 
 <section class="lesson-shell admin-edit-shell">
     <div class="course-card lesson-card">
+
         <div class="chapter-line">
             <span class="chapter-no">N</span>
             <div>
@@ -36,13 +37,20 @@
             <label>Full notes / Markdown content</label>
             <textarea class="large-textarea" name="content" rows="16">{{ note.content }}</textarea>
 
-            <button class="btn full" type="submit">Save Notes</button>
+            <button class="main-cta full" type="submit">Save Notes</button>
         </form>
 
         <hr class="soft-line">
 
-        <h2>Daily Submission Setting</h2>
-        <form method="post" class="button-edit-card">
+        <div class="chapter-line small-chapter">
+            <span class="chapter-no">S</span>
+            <div>
+                <h2>Daily Submission Setting</h2>
+                <p class="muted">Control whether students must submit their daily work before marking this day complete.</p>
+            </div>
+        </div>
+
+        <form method="post" class="upload-form">
             <input type="hidden" name="action" value="update_day_setting">
 
             <label class="checkline">
@@ -56,43 +64,55 @@
             <label>Submission Help Text</label>
             <textarea name="submission_help" rows="4">{{ day_setting.submission_help }}</textarea>
 
-            <button class="btn full" type="submit">Save Submission Setting</button>
+            <button class="main-cta full" type="submit">Save Submission Setting</button>
         </form>
 
         <hr class="soft-line">
 
-        <h2>Student Submissions</h2>
-        {% for sub in submissions %}
-            <div class="friend-row admin">
-                <span>{{ sub.avatar }}</span>
-                <div>
-                    <strong>{{ sub.student_name }}</strong>
-                    <p>{{ sub.student_email }}</p>
-                    <p>Status: {{ sub.status }} • Submitted: {{ sub.submitted_at }}</p>
-
-                    {% if sub.submission_text %}
-                        <p>{{ sub.submission_text }}</p>
-                    {% endif %}
-
-                    {% if sub.submission_url %}
-                        <p>
-                            <a class="ghost-btn" href="{{ sub.submission_url }}" target="_blank">
-                                Open Work Link
-                            </a>
-                        </p>
-                    {% endif %}
-                </div>
+        <div class="chapter-line small-chapter">
+            <span class="chapter-no">W</span>
+            <div>
+                <h2>Student Submissions</h2>
+                <p class="muted">Review student work links and daily submission text for this day.</p>
             </div>
-        {% else %}
-            <p class="muted">No student submissions yet.</p>
-        {% endfor %}
+        </div>
+
+        <div class="download-list">
+            {% for sub in submissions %}
+                <div class="download-row friend-row admin">
+                    <span>{{ sub.avatar }}</span>
+                    <div>
+                        <strong>{{ sub.student_name }}</strong>
+                        <p>{{ sub.student_email }}</p>
+                        <p>Status: {{ sub.status }} • Submitted: {{ sub.submitted_at }}</p>
+
+                        {% if sub.submission_text %}
+                            <p>{{ sub.submission_text }}</p>
+                        {% endif %}
+
+                        {% if sub.submission_url %}
+                            <p>
+                                <a class="outline-btn" href="{{ sub.submission_url }}" target="_blank">
+                                    Open Work Link
+                                </a>
+                            </p>
+                        {% endif %}
+                    </div>
+                </div>
+            {% else %}
+                <p class="muted">No student submissions yet.</p>
+            {% endfor %}
+        </div>
 
         <hr class="soft-line">
 
-        <h2>Edit Download Buttons</h2>
+        <div class="chapter-line small-chapter">
+            <span class="chapter-no">B</span>
+            <div>
+                <h2>Edit Download Buttons</h2>
                 <p class="muted">These are the buttons students see under “Files and Notes”. You can change text, link, order, style and visibility.</p>
-            
-        
+            </div>
+        </div>
 
         <div class="download-list">
             {% for button in quick_buttons %}
@@ -121,7 +141,10 @@
                         </div>
                         <div>
                             <label>Visible</label>
-                            <label class="checkline"><input type="checkbox" name="is_visible" {% if button.visible_bool %}checked{% endif %}> Show</label>
+                            <label class="checkline">
+                                <input type="checkbox" name="is_visible" {% if button.visible_bool %}checked{% endif %}>
+                                Show
+                            </label>
                         </div>
                     </div>
 
@@ -144,7 +167,7 @@
             <h3>Add New Button</h3>
 
             <label>Button Text</label>
-            <input name="button_text" placeholder="Open Day 2 Figma File">
+            <input name="button_text" placeholder="Open Day {{ day['day'] }} Work File">
 
             <label>Button URL</label>
             <input name="button_url" placeholder="Google Drive link or internal route">
@@ -163,7 +186,10 @@
                 </div>
                 <div>
                     <label>Visible</label>
-                    <label class="checkline"><input type="checkbox" name="is_visible" checked> Show</label>
+                    <label class="checkline">
+                        <input type="checkbox" name="is_visible" checked>
+                        Show
+                    </label>
                 </div>
             </div>
 
@@ -178,7 +204,7 @@
                 <input type="hidden" name="action" value="add_file">
 
                 <label>File Button Text</label>
-                <input name="file_title" placeholder="Day 1 Handbook PDF">
+                <input name="file_title" placeholder="Day {{ day['day'] }} Handbook PDF">
 
                 <label>Google Drive / Docs / ZIP Public URL</label>
                 <input name="file_url" placeholder="https://drive.google.com/...">
@@ -238,6 +264,8 @@
                 <p><b>Day Buttons Sheet:</b> {{ sheet_config.SHEET_DAY_BUTTONS }}</p>
                 <p><b>Day Files Sheet:</b> {{ sheet_config.SHEET_DAY_FILES }}</p>
                 <p><b>Day Notes Sheet:</b> {{ sheet_config.SHEET_DAY_NOTES }}</p>
+                <p><b>Day Settings Sheet:</b> {{ sheet_config.SHEET_DAY_SETTINGS if sheet_config.SHEET_DAY_SETTINGS else 'DaySettings' }}</p>
+                <p><b>Submissions Sheet:</b> {{ sheet_config.SHEET_SUBMISSIONS if sheet_config.SHEET_SUBMISSIONS else 'Submissions' }}</p>
                 <p><b>Drive Folder ID:</b> {{ sheet_config.GOOGLE_DRIVE_FOLDER_ID or 'Not set' }}</p>
             </div>
         </div>
