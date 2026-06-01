@@ -1,98 +1,100 @@
 {% extends "base.html" %}
 {% block title %}Day {{ day['day'] }} - {{ day['title'] }}{% endblock %}
 {% block content %}
-<section class="course-header compact">
+<section class="day-hero">
     <div>
-        <span class="pill">{{ day['tag'] }} QUEST</span>
+        <p class="hero-pill">{{ day['tag'] }} QUEST</p>
         <h1>Day {{ day['day'] }} - {{ trainer_note.title }}</h1>
         <p>{{ trainer_note.description }}</p>
     </div>
 
-    <form method="post" action="/day/{{ day['day'] }}/complete" class="profile-box complete-form-box">
-        <label class="checkline top-check">
-            <input type="checkbox" name="completed" {% if completed %}checked{% endif %}>
+    <form method="post" action="/day/{{ day['day'] }}/complete" class="complete-box">
+        <label>
+            <input type="checkbox" name="completed" {% if completed %}checked{% endif %}
+                   {% if day_setting.submission_required and not submission_done %}disabled{% endif %}>
             Mark Day {{ day['day'] }} Complete
         </label>
-        <button class="main-cta full" type="submit">Update Progress</button>
+
+        {% if day_setting.submission_required and not submission_done %}
+            <p class="muted">Submit your daily work first to unlock completion.</p>
+            <button class="btn small" type="button" disabled>Locked</button>
+        {% else %}
+            <button class="btn small" type="submit">Update</button>
+        {% endif %}
     </form>
 </section>
 
-<section class="lesson-shell">
-    <div class="course-card lesson-card">
-        <div class="chapter-line">
-            <span class="chapter-no">{{ "%02d"|format(day['day']) }}</span>
-            <div>
-                <h2>What you will do</h2>
-                <p class="muted">{{ day['task'] }}</p>
-            </div>
-        </div>
-
-        <div class="lesson-grid">
+<section class="two-col">
+    <div class="content-card">
+        <h2>What you will do</h2>
+        <div class="long-boxes">
             {% for item in day['items'] %}
-                <div class="lesson-box"><span>{{ "%02d"|format(loop.index) }}</span>{{ item }}</div>
+                <div class="info-long"><span>{{ "%02d"|format(loop.index) }}</span>{{ item }}</div>
             {% endfor %}
         </div>
 
         <h2>Trainer Notes</h2>
-        <div class="trainer-note-preview"><pre>{{ trainer_note.content }}</pre></div>
+        <div class="note-preview">{{ trainer_note.content }}</div>
 
-        <h2>Task</h2>
-        <div class="task-box">{{ day['task'] }}</div>
-
-        <div class="hero-actions complete-form">
-            <a class="outline-btn" href="/dashboard">Back to Dashboard</a>
+        <div class="actions">
+            <a class="ghost-btn" href="/dashboard">Back to Dashboard</a>
         </div>
     </div>
 
-    <aside class="side-stack">
-        <div class="side-card">
-            <h3>Files and Notes</h3>
-            <div class="download-list">
-                {% for button in quick_buttons %}
-                    {% if button.visible_bool %}
-                        <a class="download-row {% if button.style == 'btn' %}primary-download{% endif %} {% if button.url == '#' %}disabled-link{% endif %}"
-                           href="{{ button.url }}"
-                           {% if button.url != '#' %}target="{% if button.url.startswith('/') %}_self{% else %}_blank{% endif %}"{% endif %}>
-                            <span>{{ button.button_text }}</span>
-                            <strong>OPEN</strong>
-                        </a>
-                    {% endif %}
-                {% endfor %}
-            </div>
-        </div>
-
-        <div class="side-card">
-            <h3>Extra Files</h3>
-            <div class="download-list">
-                {% if files %}
-                    {% for file in files %}
-                        <a class="download-row" href="{{ file.url }}" target="_blank">
-                            <span>{{ file.title }}</span>
-                            <strong>OPEN</strong>
-                        </a>
-                    {% endfor %}
-                {% else %}
-                    <p class="muted">No extra files added for this day.</p>
+    <aside class="content-card">
+        <h2>Files and Notes</h2>
+        <div class="file-grid">
+            {% for button in quick_buttons %}
+                {% if button.visible_bool %}
+                    <a class="file-link {{ 'primary-download' if button.style == 'btn' else '' }} {{ 'disabled-link' if button.url == '#' else '' }}"
+                       href="{{ button.url }}"
+                       {% if button.url != '#' %}target="{% if button.url.startswith('/') %}_self{% else %}_blank{% endif %}"{% endif %}>
+                        {{ button.button_text }}
+                    </a>
                 {% endif %}
-            </div>
+            {% endfor %}
         </div>
 
-        <div class="side-card">
-            <h3>Your Daily Note</h3>
-            <form method="post">
-                <textarea name="student_note" rows="8" placeholder="Write what you learned today...">{{ student_note }}</textarea>
-                <button class="main-cta full" type="submit">Save My Note</button>
-            </form>
-        </div>
+        <h2>Extra Files</h2>
+        {% if files %}
+            {% for file in files %}
+                <a class="file-link" href="{{ file.url }}" target="_blank">⬇ {{ file.title }}</a>
+            {% endfor %}
+        {% else %}
+            <p class="muted">No extra files added for this day.</p>
+        {% endif %}
 
-        <div class="side-card">
-            <h3>Quick Days</h3>
-            <div class="mini-day-list">
-                {% for i in range(1, 15) %}
-                    <a class="{% if i == day['day'] %}active{% endif %}" href="/day/{{ i }}">Day {{ "%02d"|format(i) }}</a>
-                {% endfor %}
+        <h2>{{ day_setting.submission_title }}</h2>
+        <p class="muted">{{ day_setting.submission_help }}</p>
+
+        {% if day_setting.submission_required %}
+            <div class="task-box">Submission is required before marking this day complete.</div>
+        {% else %}
+            <p class="muted">Submission is optional for this day.</p>
+        {% endif %}
+
+        <form method="post" action="/day/{{ day['day'] }}/submit-work">
+            <label>Work Note / Explanation</label>
+            <textarea name="submission_text" rows="7" placeholder="Write what you completed today...">{{ submission.submission_text }}</textarea>
+
+            <label>Work Link</label>
+            <input name="submission_url" value="{{ submission.submission_url }}" placeholder="GitHub / Google Drive / Screenshot / WordPress / Colab link">
+
+            <button class="btn full" type="submit">Submit My Work</button>
+        </form>
+
+        {% if submission.submitted_at %}
+            <div class="hint-box">
+                Submitted on: {{ submission.submitted_at }}<br>
+                Status: {{ submission.status }}
             </div>
-        </div>
+        {% endif %}
+
+        <h2>Your Daily Note</h2>
+        <form method="post">
+            <textarea name="student_note" rows="7" placeholder="Write what you learned today...">{{ student_note }}</textarea>
+            <button class="btn full" type="submit">Save My Note</button>
+        </form>
     </aside>
 </section>
 {% endblock %}

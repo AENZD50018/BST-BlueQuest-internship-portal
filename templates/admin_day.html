@@ -36,13 +36,60 @@
             <label>Full notes / Markdown content</label>
             <textarea class="large-textarea" name="content" rows="16">{{ note.content }}</textarea>
 
-            <button class="main-cta full" type="submit">Save Notes</button>
+            <button class="btn full" type="submit">Save Notes</button>
         </form>
 
-        <div class="chapter-line small-chapter">
-            <span class="chapter-no">B</span>
-            <div>
-                <h2>Edit Download Buttons</h2>
+        <hr class="soft-line">
+
+        <h2>Daily Submission Setting</h2>
+        <form method="post" class="button-edit-card">
+            <input type="hidden" name="action" value="update_day_setting">
+
+            <label class="checkline">
+                <input type="checkbox" name="submission_required" {% if day_setting.submission_required %}checked{% endif %}>
+                Require student work submission before marking complete
+            </label>
+
+            <label>Submission Title</label>
+            <input name="submission_title" value="{{ day_setting.submission_title }}">
+
+            <label>Submission Help Text</label>
+            <textarea name="submission_help" rows="4">{{ day_setting.submission_help }}</textarea>
+
+            <button class="btn full" type="submit">Save Submission Setting</button>
+        </form>
+
+        <hr class="soft-line">
+
+        <h2>Student Submissions</h2>
+        {% for sub in submissions %}
+            <div class="friend-row admin">
+                <span>{{ sub.avatar }}</span>
+                <div>
+                    <strong>{{ sub.student_name }}</strong>
+                    <p>{{ sub.student_email }}</p>
+                    <p>Status: {{ sub.status }} • Submitted: {{ sub.submitted_at }}</p>
+
+                    {% if sub.submission_text %}
+                        <p>{{ sub.submission_text }}</p>
+                    {% endif %}
+
+                    {% if sub.submission_url %}
+                        <p>
+                            <a class="ghost-btn" href="{{ sub.submission_url }}" target="_blank">
+                                Open Work Link
+                            </a>
+                        </p>
+                    {% endif %}
+                </div>
+            </div>
+        {% else %}
+            <p class="muted">No student submissions yet.</p>
+        {% endfor %}
+
+        <hr class="soft-line">
+
+        <h2>Edit Download Buttons</h2>
                 <p class="muted">These are the buttons students see under “Files and Notes”. You can change text, link, order, style and visibility.</p>
             </div>
         </div>

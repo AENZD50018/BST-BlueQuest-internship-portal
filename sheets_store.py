@@ -38,6 +38,8 @@ SHEET_STUDENT_NOTES = os.environ.get("SHEET_STUDENT_NOTES", "StudentNotes")
 SHEET_DAY_NOTES = os.environ.get("SHEET_DAY_NOTES", "DayNotes")
 SHEET_DAY_FILES = os.environ.get("SHEET_DAY_FILES", "DayFiles")
 SHEET_DAY_BUTTONS = os.environ.get("SHEET_DAY_BUTTONS", "DayButtons")
+SHEET_DAY_SETTINGS = os.environ.get("SHEET_DAY_SETTINGS", "DaySettings")
+SHEET_SUBMISSIONS = os.environ.get("SHEET_SUBMISSIONS", "Submissions")
 
 SHEET_HEADERS = {
     SHEET_USERS: ["id", "email", "password_hash", "name", "role", "avatar", "created_at", "last_login"],
@@ -46,6 +48,8 @@ SHEET_HEADERS = {
     SHEET_DAY_NOTES: ["day", "title", "description", "content", "updated_at"],
     SHEET_DAY_FILES: ["id", "day", "title", "url", "updated_at"],
     SHEET_DAY_BUTTONS: ["id", "day", "button_text", "url", "style", "sort_order", "is_visible", "updated_at"],
+    SHEET_DAY_SETTINGS: ["day", "submission_required", "submission_title", "submission_help", "updated_at"],
+    SHEET_SUBMISSIONS: ["id", "user_id", "day", "submission_text", "submission_url", "status", "submitted_at", "updated_at"],
 }
 
 ADMIN_EMAIL = os.environ.get("ADMIN_EMAIL", "admin@bst.local")
@@ -70,7 +74,8 @@ def now_text() -> str:
 def _parse_service_account_info() -> dict:
     raw = os.environ.get("GOOGLE_SERVICE_ACCOUNT_JSON", "").strip()
     if not raw:
-        raise ConfigError("GOOGLE_SERVICE_ACCOUNT_JSON environment variable is missing.")
+        raise ConfigError(
+            "GOOGLE_SERVICE_ACCOUNT_JSON environment variable is missing.")
 
     try:
         if raw.startswith("{"):
@@ -78,7 +83,8 @@ def _parse_service_account_info() -> dict:
         decoded = base64.b64decode(raw).decode("utf-8")
         return json.loads(decoded)
     except Exception as exc:
-        raise ConfigError("GOOGLE_SERVICE_ACCOUNT_JSON is not valid JSON or base64 JSON.") from exc
+        raise ConfigError(
+            "GOOGLE_SERVICE_ACCOUNT_JSON is not valid JSON or base64 JSON.") from exc
 
 
 def get_service_account_email() -> str:
@@ -131,7 +137,8 @@ def get_drive_service():
     if _drive_service is not None:
         return _drive_service
     if build is None or MediaIoBaseUpload is None:
-        raise ConfigError("google-api-python-client is not installed. Run: pip install google-api-python-client")
+        raise ConfigError(
+            "google-api-python-client is not installed. Run: pip install google-api-python-client")
     info = _parse_service_account_info()
     creds = Credentials.from_service_account_info(info, scopes=SCOPES)
     _drive_service = build("drive", "v3", credentials=creds)
@@ -347,7 +354,8 @@ def get_progress(user_id: str) -> Dict[int, bool]:
     for row in rows:
         if str(row.get("user_id")) == str(user_id):
             try:
-                progress[int(row.get("day"))] = str(row.get("completed", "")).upper() == "TRUE"
+                progress[int(row.get("day"))] = str(
+                    row.get("completed", "")).upper() == "TRUE"
             except Exception:
                 pass
     return progress
@@ -364,9 +372,11 @@ def get_progress_stats(user_id: str) -> Tuple[Dict[int, bool], int, int, int, in
 
 
 def set_progress(user_id: str, day: int, completed: bool):
-    row_no = row_number_by_two_values(SHEET_PROGRESS, "user_id", str(user_id), "day", str(day))
+    row_no = row_number_by_two_values(
+        SHEET_PROGRESS, "user_id", str(user_id), "day", str(day))
     ws = worksheet(SHEET_PROGRESS)
-    values = [str(user_id), str(day), "TRUE" if completed else "FALSE", now_text()]
+    values = [str(user_id), str(day),
+              "TRUE" if completed else "FALSE", now_text()]
     if row_no:
         ws.update(f"A{row_no}:D{row_no}", [values])
     else:
@@ -383,7 +393,8 @@ def get_student_note(user_id: str, day: int) -> str:
 
 
 def save_student_note(user_id: str, day: int, note: str):
-    row_no = row_number_by_two_values(SHEET_STUDENT_NOTES, "user_id", str(user_id), "day", str(day))
+    row_no = row_number_by_two_values(
+        SHEET_STUDENT_NOTES, "user_id", str(user_id), "day", str(day))
     ws = worksheet(SHEET_STUDENT_NOTES)
     values = [str(user_id), str(day), note, now_text()]
     if row_no:
@@ -451,7 +462,8 @@ def list_day_buttons(day: int) -> List[dict]:
             except Exception:
                 button["sort_number"] = 999
             button["style"] = str(row.get("style", "ghost") or "ghost").lower()
-            button["button_text"] = str(row.get("button_text", "Download") or "Download")
+            button["button_text"] = str(
+                row.get("button_text", "Download") or "Download")
             button["url"] = str(row.get("url", "#") or "#")
             buttons.append(button)
     buttons.sort(key=lambda x: (x["sort_number"], x["button_text"]))
@@ -529,7 +541,8 @@ def update_day_file(file_id: str, title: str, url: str):
     values = ws.row_values(row_no)
     values = values + [""] * (len(headers) - len(values))
     day = values[headers.index("day")]
-    ws.update(f"A{row_no}:E{row_no}", [[str(file_id), str(day), title.strip(), url.strip(), now_text()]])
+    ws.update(f"A{row_no}:E{row_no}", [
+              [str(file_id), str(day), title.strip(), url.strip(), now_text()]])
     invalidate_cache()
 
 
@@ -542,7 +555,8 @@ def delete_day_file(file_id: str):
 
 def upload_to_google_drive(day: int, file_storage, custom_title: str = "") -> dict:
     if not GOOGLE_DRIVE_FOLDER_ID:
-        raise ConfigError("GOOGLE_DRIVE_FOLDER_ID is missing. Add it in Vercel/local .env to upload files directly to Google Drive.")
+        raise ConfigError(
+            "GOOGLE_DRIVE_FOLDER_ID is missing. Add it in Vercel/local .env to upload files directly to Google Drive.")
     if not file_storage or not file_storage.filename:
         raise ValueError("No file selected.")
 
@@ -553,7 +567,8 @@ def upload_to_google_drive(day: int, file_storage, custom_title: str = "") -> di
     mime_type = file_storage.mimetype or "application/octet-stream"
 
     file_bytes = file_storage.read()
-    media = MediaIoBaseUpload(io.BytesIO(file_bytes), mimetype=mime_type, resumable=False)
+    media = MediaIoBaseUpload(io.BytesIO(file_bytes),
+                              mimetype=mime_type, resumable=False)
     metadata = {
         "name": drive_name,
         "parents": [GOOGLE_DRIVE_FOLDER_ID]
@@ -588,10 +603,12 @@ def upload_to_google_drive(day: int, file_storage, custom_title: str = "") -> di
 
 
 def all_student_stages() -> List[dict]:
-    students = [u for u in get_records(SHEET_USERS) if str(u.get("role")) == "student"]
+    students = [u for u in get_records(
+        SHEET_USERS) if str(u.get("role")) == "student"]
     rows = []
     for user in students:
-        progress, completed, total, percent, xp, level = get_progress_stats(user["id"])
+        progress, completed, total, percent, xp, level = get_progress_stats(
+            user["id"])
         current_day = min(completed + 1, total)
         if completed == total:
             stage = "Completed"
@@ -611,3 +628,131 @@ def all_student_stages() -> List[dict]:
         })
     rows.sort(key=lambda x: (-x["completed"], x["name"]))
     return rows
+
+
+def get_day_setting(day: int) -> dict:
+    rows = get_records(SHEET_DAY_SETTINGS)
+
+    for row in rows:
+        if str(row.get("day")) == str(day):
+            return {
+                "day": day,
+                "submission_required": str(row.get("submission_required", "")).upper() == "TRUE",
+                "submission_title": str(row.get("submission_title", "")) or f"Submit Day {day} Work",
+                "submission_help": str(row.get("submission_help", "")) or "Paste your work link or short explanation.",
+                "updated_at": str(row.get("updated_at", ""))
+            }
+
+    return {
+        "day": day,
+        "submission_required": False,
+        "submission_title": f"Submit Day {day} Work",
+        "submission_help": "Paste your work link or short explanation.",
+        "updated_at": ""
+    }
+
+
+def update_day_setting(day: int, submission_required: bool, submission_title: str, submission_help: str):
+    row_no = row_number_by_value(SHEET_DAY_SETTINGS, "day", str(day))
+    ws = worksheet(SHEET_DAY_SETTINGS)
+
+    values = [
+        str(day),
+        "TRUE" if submission_required else "FALSE",
+        submission_title.strip(),
+        submission_help.strip(),
+        now_text()
+    ]
+
+    if row_no:
+        ws.update(f"A{row_no}:E{row_no}", [values])
+    else:
+        ws.append_row(values)
+
+    invalidate_cache()
+
+
+def get_student_submission(user_id: str, day: int) -> dict:
+    rows = get_records(SHEET_SUBMISSIONS)
+
+    for row in rows:
+        if str(row.get("user_id")) == str(user_id) and str(row.get("day")) == str(day):
+            return {
+                "id": str(row.get("id", "")),
+                "user_id": str(row.get("user_id", "")),
+                "day": str(row.get("day", "")),
+                "submission_text": str(row.get("submission_text", "")),
+                "submission_url": str(row.get("submission_url", "")),
+                "status": str(row.get("status", "")),
+                "submitted_at": str(row.get("submitted_at", "")),
+                "updated_at": str(row.get("updated_at", ""))
+            }
+
+    return {
+        "id": "",
+        "user_id": str(user_id),
+        "day": str(day),
+        "submission_text": "",
+        "submission_url": "",
+        "status": "",
+        "submitted_at": "",
+        "updated_at": ""
+    }
+
+
+def save_student_submission(user_id: str, day: int, submission_text: str, submission_url: str):
+    row_no = row_number_by_two_values(
+        SHEET_SUBMISSIONS, "user_id", str(user_id), "day", str(day))
+    ws = worksheet(SHEET_SUBMISSIONS)
+
+    existing = get_student_submission(user_id, day)
+    submission_id = existing.get("id") or str(uuid.uuid4())[:12]
+    submitted_at = existing.get("submitted_at") or now_text()
+
+    values = [
+        submission_id,
+        str(user_id),
+        str(day),
+        submission_text.strip(),
+        submission_url.strip(),
+        "Submitted",
+        submitted_at,
+        now_text()
+    ]
+
+    if row_no:
+        ws.update(f"A{row_no}:H{row_no}", [values])
+    else:
+        ws.append_row(values)
+
+    invalidate_cache()
+
+
+def has_required_submission(user_id: str, day: int) -> bool:
+    submission = get_student_submission(user_id, day)
+    return bool(
+        submission.get("submission_text", "").strip()
+        or submission.get("submission_url", "").strip()
+    )
+
+
+def list_day_submissions(day: int) -> list:
+    submissions = []
+
+    for row in get_records(SHEET_SUBMISSIONS):
+        if str(row.get("day")) == str(day):
+            user = find_user_by_id(str(row.get("user_id", "")))
+            submissions.append({
+                "id": row.get("id", ""),
+                "user_id": row.get("user_id", ""),
+                "student_name": user.get("name", "Unknown") if user else "Unknown",
+                "student_email": user.get("email", "") if user else "",
+                "avatar": user.get("avatar", "🧑‍💻") if user else "🧑‍💻",
+                "submission_text": row.get("submission_text", ""),
+                "submission_url": row.get("submission_url", ""),
+                "status": row.get("status", ""),
+                "submitted_at": row.get("submitted_at", ""),
+                "updated_at": row.get("updated_at", "")
+            })
+
+    return submissions

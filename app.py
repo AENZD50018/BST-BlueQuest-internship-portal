@@ -236,6 +236,9 @@ def day_detail(day_no):
     trainer_note = store.get_day_note(day_no)
     files = store.list_day_files(day_no)
     quick_buttons = store.list_day_buttons(day_no)
+    day_setting = store.get_day_setting(day_no)
+    submission = store.get_student_submission(user["id"], day_no)
+    submission_done = store.has_required_submission(user["id"], day_no)
     return render_template(
         "day_detail.html",
         user=user,
@@ -244,13 +247,23 @@ def day_detail(day_no):
         files=files,
         quick_buttons=quick_buttons,
         completed=progress.get(day_no, False),
-        student_note=student_note
+        student_note=student_note,
+        day_setting=day_setting,
+        submission=submission,
+        submission_done=submission_done
     )
 
 
 @app.route("/day/<int:day_no>/complete", methods=["POST"])
 @login_required
 def mark_complete(day_no):
+    day_setting = store.get_day_setting(day_no)
+
+    if day_setting.get("submission_required"):
+        if not store.has_required_submission(user["id"], day_no):
+            flash(
+                "Please submit your daily work before marking this day complete.", "warning")
+            return redirect(url_for("day_detail", day_no=day_no))
     user = current_user()
     completed = request.form.get("completed") == "on"
     store.set_progress(user["id"], day_no, completed)
@@ -280,6 +293,32 @@ def download_original_day_notes(day_no):
         mimetype="text/markdown",
         headers={"Content-Disposition": f"attachment; filename={filename}"}
     )
+
+
+@app.route("/day/<int:day_no>/submit-work", methods=["POST"])
+@login_required
+def submit_work(day_no):
+    user = current_user()
+    if not user:
+        session.clear()
+        return redirect(url_for("login"))
+
+    submission_text = request.form.get("submission_text", "")
+    submission_url = request.form.get("submission_url", "")
+
+    if not submission_text.strip() and not submission_url.strip():
+        flash("Please add your work note or work link before submitting.", "warning")
+        return redirect(url_for("day_detail", day_no=day_no))
+
+    store.save_student_submission(
+        user_id=user["id"],
+        day=day_no,
+        submission_text=submission_text,
+        submission_url=submission_url
+    )
+
+    flash("Your work submission has been saved.", "success")
+    return redirect(url_for("day_detail", day_no=day_no))
 
 
 @app.route("/admin")
@@ -371,11 +410,28 @@ def admin_day(day_no):
                 store.delete_day_button(button_id)
                 flash("Button deleted.", "success")
 
+        elif action == "update_day_setting":
+            submission_required = request.form.get(
+                "submission_required") == "on"
+            submission_title = request.form.get("submission_title", "")
+            submission_help = request.form.get("submission_help", "")
+
+            store.update_day_setting(
+                day=day_no,
+                submission_required=submission_required,
+                submission_title=submission_title,
+                submission_help=submission_help
+            )
+
+            flash("Day submission setting updated.", "success")
+
         return redirect(url_for("admin_day", day_no=day_no))
 
     note = store.get_day_note(day_no)
     files = store.list_day_files(day_no)
     quick_buttons = store.list_day_buttons(day_no)
+    day_setting = store.get_day_setting(day_no)
+    submissions = store.list_day_submissions(day_no)
     return render_template(
         "admin_day.html",
         user=current_user(),
@@ -383,7 +439,9 @@ def admin_day(day_no):
         note=note,
         files=files,
         quick_buttons=quick_buttons,
-        sheet_config=store.get_sheet_config_for_admin()
+        sheet_config=store.get_sheet_config_for_admin(),
+        day_setting=day_setting,
+        submissions=submissions,
     )
 
 
