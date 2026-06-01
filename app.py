@@ -1,17 +1,18 @@
-from sheets_store import ConfigError
-import sheets_store as store
-from days import DAYS, get_day
+import os
+import time
+from functools import wraps
+
+from dotenv import load_dotenv
+load_dotenv()
+
 from flask import (
     Flask, render_template, request, redirect, url_for, session,
     flash, Response, send_from_directory
 )
-from functools import wraps
-import os
-import time
 
-from dotenv import load_dotenv
-
-load_dotenv()
+from days import DAYS, get_day
+import sheets_store as store
+from sheets_store import ConfigError
 
 
 _LAST_INIT_TIME = 0
@@ -121,7 +122,7 @@ def inject_logged_user():
 
 @app.route("/setup")
 def setup():
-    err = safe_initialize()
+    err = safe_initialize(force=True)
     if err:
         return render_template(
             "setup_error.html",
@@ -257,14 +258,19 @@ def day_detail(day_no):
 @app.route("/day/<int:day_no>/complete", methods=["POST"])
 @login_required
 def mark_complete(day_no):
+    user = current_user()
+    if not user:
+        session.clear()
+        flash("Please login again.", "warning")
+        return redirect(url_for("login"))
+
     day_setting = store.get_day_setting(day_no)
 
     if day_setting.get("submission_required"):
         if not store.has_required_submission(user["id"], day_no):
-            flash(
-                "Please submit your daily work before marking this day complete.", "warning")
+            flash("Please submit your daily work before marking this day complete.", "warning")
             return redirect(url_for("day_detail", day_no=day_no))
-    user = current_user()
+
     completed = request.form.get("completed") == "on"
     store.set_progress(user["id"], day_no, completed)
     flash("Progress updated.", "success")

@@ -105,6 +105,8 @@ def get_sheet_config_for_admin() -> dict:
         "SHEET_DAY_NOTES": SHEET_DAY_NOTES,
         "SHEET_DAY_FILES": SHEET_DAY_FILES,
         "SHEET_DAY_BUTTONS": SHEET_DAY_BUTTONS,
+        "SHEET_DAY_SETTINGS": SHEET_DAY_SETTINGS,
+        "SHEET_SUBMISSIONS": SHEET_SUBMISSIONS,
         "service_account_email": get_service_account_email(),
     }
 
